@@ -1,12 +1,8 @@
 {
   "name": "malayalam-sarcasm-motivator",
+  "version": "1.0.0",
   "type": "module",
-  "dependencies": {
-    "express": "^4.19.0",
-    "node-fetch": "^3.3.2",
-    "dotenv": "^16.4.5"
-  },
   "scripts": {
-    "start": "node server.js"
+    "start": "vercel dev"
   }
 }
