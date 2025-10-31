@@ -69,7 +69,8 @@
       മലയാളം Sarcasm Motivator
     </h1>
     <p class="text-center text-gray-500 mb-6">
-      Describe how you truly feel or what you're struggling with. The AI will judge... and then motivate.
+      Type what you feel — the AI will be sarcastic like your best friend,  
+      then heal you like a mother’s advice ❤️
     </p>
 
     <div class="flex flex-col gap-4 mb-6">
@@ -77,7 +78,7 @@
         id="user-input"
         rows="3"
         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
-        placeholder="ഉദാഹരണത്തിന്: 'ഇന്ന് ഒരുപാട് ജോലിയുണ്ട്, തീരില്ലെന്ന് തോന്നുന്നു...' (Example: 'I have a lot of work today, I don't think I can finish...')"
+        placeholder="ഉദാഹരണം: 'ഇന്ന് ഒരുപാട് ജോലിയുണ്ട്, തീരില്ലെന്ന് തോന്നുന്നു...'"
       ></textarea>
 
       <button
@@ -85,19 +86,19 @@
         class="button-primary text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg flex-shrink-0"
         onclick="generateQuote()"
       >
-        Get Roasted!
+        Get Roasted 🔥
       </button>
     </div>
 
-    <div id="quote-display" class="quote-display-placeholder text-gray-400 italic">
-      Type your current mood or problem above and click 'Get Roasted!' to get your Malayalam dose of reality.
+    <div id="quote-display" class="text-gray-400 italic">
+      Type your mood above and click 'Get Roasted!' for your Malayalam-style truth bomb (സത്യം മാത്രമേ പറയൂ.😌).
     </div>
 
     <p id="error-message" class="text-red-600 text-sm mt-3 hidden text-center"></p>
   </div>
 
   <script>
-    // UI Elements
+
     const userInput = document.getElementById("user-input");
     const generateButton = document.getElementById("generate-button");
     const quoteDisplay = document.getElementById("quote-display");
@@ -110,14 +111,13 @@
       const originalButtonText = generateButton.textContent;
 
       if (!userFeeling) {
-        errorMessage.textContent =
-          "Come on, tell me what's wrong. Type something in the box!";
+        errorMessage.textContent = "Type something first, മച്ചാനേ 😏";
         errorMessage.classList.remove("hidden");
         return;
       }
 
       generateButton.disabled = true;
-      generateButton.textContent = "Generating... (ഒരു നിമിഷം)";
+      generateButton.textContent = "Generating... (ഒരു നിമിഷം. ഇപ്പൊ ശരിയാക്കിത്തരാം 🪄)";
       quoteDisplay.innerHTML =
         '<svg class="animate-spin h-5 w-5 text-indigo-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
       quoteDisplay.classList.remove("text-gray-400", "italic");
@@ -125,18 +125,17 @@
       errorMessage.textContent = "";
 
       const systemPrompt =
-        "You are a highly sarcastic, yet ultimately encouraging motivation coach from Kerala. Your job is to take the user's input (which can be a feeling or a short problem/struggle) and generate a single, short quote in **pure, fluent Malayalam** that uses a funny, exaggerated sarcastic tone before delivering a genuine, powerful kick of motivation. The output must be ONLY the quote, no explanations, no formatting, just the plain Malayalam text.";
-      const userQuery = `The user says: "${userFeeling}". Generate the quote now.`;
+        "You are a sarcastic yet emotional Malayalam movie-style motivator. Speak in **pure Malayalam**. Start with strong, humorous sarcasm — like a film dialogue — then deliver a punch of real emotional motivation. The output must only be the final quote (no English, no explanation).";
+      const userQuery = `User says: "${userFeeling}"`;
 
       const payload = {
         contents: [{ parts: [{ text: userQuery }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
       };
 
-      const maxRetries = 5;
       let resultText = "Failed to generate quote. Try again later.";
 
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
+      for (let attempt = 0; attempt < 3; attempt++) {
         try {
           const response = await fetch("/api/gemini", {
             method: "POST",
@@ -145,28 +144,16 @@
           });
 
           if (!response.ok) throw new Error("API request failed");
-
           const result = await response.json();
           const candidate = result.candidates?.[0];
 
           if (candidate && candidate.content?.parts?.[0]?.text) {
             resultText = candidate.content.parts[0].text.trim();
             break;
-          } else {
-            throw new Error("Invalid response structure from API.");
           }
         } catch (error) {
           console.error(`Attempt ${attempt + 1} failed:`, error);
-          if (attempt < maxRetries - 1) {
-            const delay =
-              Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-            await sleep(delay);
-          } else {
-            errorMessage.textContent =
-              "Sorry, the motivational guru is taking a nap. Please try again in a few moments.";
-            errorMessage.classList.remove("hidden");
-            resultText = "Failed to generate quote. Try again later.";
-          }
+          if (attempt < 2) await sleep(1000 * (attempt + 1));
         }
       }
 
@@ -177,12 +164,6 @@
         quoteDisplay.innerHTML = `<span class="text-red-500">${resultText}</span>`;
       } else {
         quoteDisplay.textContent = resultText;
-      }
-
-      if (errorMessage.classList.contains("hidden")) {
-        quoteDisplay.classList.add("text-indigo-800");
-      } else {
-        quoteDisplay.classList.add("text-gray-400", "italic");
       }
     }
   </script>
