@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malayalam Sarcasm Motivator</title>
+
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Sans+Malayalam:wght@100..900&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    #app-container {
+      max-width: 500px;
+      width: 100%;
+      background-color: #ffffff;
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-top: 5vh;
+    }
+
+    #quote-display {
+      min-height: 150px;
+      font-family: 'Noto Sans Malayalam', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.75;
+      color: #1e3a8a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 0.75rem;
+      background-color: #eff6ff;
+      padding: 1rem;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .button-primary {
+      background-color: #4f46e5;
+      transition: background-color 0.15s ease-in-out, transform 0.05s ease-in-out;
+    }
+
+    .button-primary:hover {
+      background-color: #4338ca;
+      transform: translateY(-1px);
+    }
+
+    .button-primary:active {
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">
+      മലയാളം Sarcasm Motivator
+    </h1>
+    <p class="text-center text-gray-500 mb-6">
+      Describe how you truly feel or what you're struggling with. The AI will judge... and then motivate.
+    </p>
+
+    <div class="flex flex-col gap-4 mb-6">
+      <textarea
+        id="user-input"
+        rows="3"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+        placeholder="ഉദാഹരണത്തിന്: 'ഇന്ന് ഒരുപാട് ജോലിയുണ്ട്, തീരില്ലെന്ന് തോന്നുന്നു...' (Example: 'I have a lot of work today, I don't think I can finish...')"
+      ></textarea>
+
+      <button
+        id="generate-button"
+        class="button-primary text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg flex-shrink-0"
+        onclick="generateQuote()"
+      >
+        Get Roasted!
+      </button>
+    </div>
+
+    <div id="quote-display" class="quote-display-placeholder text-gray-400 italic">
+      Type your current mood or problem above and click 'Get Roasted!' to get your Malayalam dose of reality.
+    </div>
+
+    <p id="error-message" class="text-red-600 text-sm mt-3 hidden text-center"></p>
+  </div>
+
+  <script>
+    // UI Elements
+    const userInput = document.getElementById("user-input");
+    const generateButton = document.getElementById("generate-button");
+    const quoteDisplay = document.getElementById("quote-display");
+    const errorMessage = document.getElementById("error-message");
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    async function generateQuote() {
+      const userFeeling = userInput.value.trim();
+      const originalButtonText = generateButton.textContent;
+
+      if (!userFeeling) {
+        errorMessage.textContent =
+          "Come on, tell me what's wrong. Type something in the box!";
+        errorMessage.classList.remove("hidden");
+        return;
+      }
+
+      generateButton.disabled = true;
+      generateButton.textContent = "Generating... (ഒരു നിമിഷം)";
+      quoteDisplay.innerHTML =
+        '<svg class="animate-spin h-5 w-5 text-indigo-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+      quoteDisplay.classList.remove("text-gray-400", "italic");
+      errorMessage.classList.add("hidden");
+      errorMessage.textContent = "";
+
+      const systemPrompt =
+        "You are a highly sarcastic, yet ultimately encouraging motivation coach from Kerala. Your job is to take the user's input (which can be a feeling or a short problem/struggle) and generate a single, short quote in **pure, fluent Malayalam** that uses a funny, exaggerated sarcastic tone before delivering a genuine, powerful kick of motivation. The output must be ONLY the quote, no explanations, no formatting, just the plain Malayalam text.";
+      const userQuery = `The user says: "${userFeeling}". Generate the quote now.`;
+
+      const payload = {
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+      };
+
+      const maxRetries = 5;
+      let resultText = "Failed to generate quote. Try again later.";
+
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          const response = await fetch("/api/gemini", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) throw new Error("API request failed");
+
+          const result = await response.json();
+          const candidate = result.candidates?.[0];
+
+          if (candidate && candidate.content?.parts?.[0]?.text) {
+            resultText = candidate.content.parts[0].text.trim();
+            break;
+          } else {
+            throw new Error("Invalid response structure from API.");
+          }
+        } catch (error) {
+          console.error(`Attempt ${attempt + 1} failed:`, error);
+          if (attempt < maxRetries - 1) {
+            const delay =
+              Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+            await sleep(delay);
+          } else {
+            errorMessage.textContent =
+              "Sorry, the motivational guru is taking a nap. Please try again in a few moments.";
+            errorMessage.classList.remove("hidden");
+            resultText = "Failed to generate quote. Try again later.";
+          }
+        }
+      }
+
+      generateButton.disabled = false;
+      generateButton.textContent = originalButtonText;
+
+      if (resultText.startsWith("Failed")) {
+        quoteDisplay.innerHTML = `<span class="text-red-500">${resultText}</span>`;
+      } else {
+        quoteDisplay.textContent = resultText;
+      }
+
+      if (errorMessage.classList.contains("hidden")) {
+        quoteDisplay.classList.add("text-indigo-800");
+      } else {
+        quoteDisplay.classList.add("text-gray-400", "italic");
+      }
+    }
+  </script>
+</body>
+</html>
