@@ -4,14 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Malayalam Sarcasm Motivator</title>
-
-  <!-- Load Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Sans+Malayalam:wght@100..900&display=swap');
 
-      body {
+    body {
       font-family: 'Inter', sans-serif;
       background: linear-gradient(to bottom right, #f0f4ff, #e0e7ff);
       display: flex;
@@ -72,16 +70,15 @@
     }
 
     #footer a {
-      color: #ffff  ;
+      color: #4338ca;
       font-weight: 600;
       text-decoration: none;
     }
-#footer p{
-      color: #33333 ;
+    #star{
+      color: #ffff;
       font-weight: 600;
       text-decoration: none;
     }
-
 
     #footer a:hover {
       text-decoration: underline;
@@ -91,16 +88,59 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal img {
+      width: 100px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+    }
+
+    .lang-button {
+      background-color: #4f46e5;
+      color: white;
+      padding: 10px 16px;
+      margin: 8px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+
+    .lang-button:hover {
+      background-color: #4338ca;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
+
 <body>
   <div id="app-container">
     <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">
       മലയാളം Sarcasm Motivator
     </h1>
     <p class="text-center text-gray-500 mb-6">
-      Type what you feel — the AI will be sarcastic like your best friend,  
-      then heal you like a mother’s advice ❤️
+      Type what you feel — the AI will roast you like your best friend,  
+      then heal you like your MOM ❤️
     </p>
 
     <div class="flex flex-col gap-4 mb-6">
@@ -108,72 +148,111 @@
         id="user-input"
         rows="3"
         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
-        placeholder="ഉദാഹരണം: 'ഇന്ന് ഒരുപാട് ജോലിയുണ്ട്, തീരില്ലെന്ന് തോന്നുന്നു...'"
+        placeholder="ഉദാഹരണം: 'ഇന്ന് ഒരുപാട് ജോലിയുണ്ട്, തീരില്ലെന്ന് തോന്നുന്നു...'(Example: 'I have a lot of work today, I don't think I can finish...')"
       ></textarea>
 
       <button
         id="generate-button"
         class="button-primary text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg flex-shrink-0"
-        onclick="generateQuote()"
+        onclick="openLanguageModal()"
       >
         Get Roasted 🔥
       </button>
     </div>
 
     <div id="quote-display" class="text-gray-400 italic">
-      Type your mood above and click 'Get Roasted!' for your Malayalam-style truth bomb (സത്യം മാത്രമേ പറയൂ.😌).
+      Type your mood above and click 'Get Roasted!' for your Malayalam-style truth bomb (സത്യം മാത്രമേ പറയൂ 😌).
     </div>
 
     <p id="error-message" class="text-red-600 text-sm mt-3 hidden text-center"></p>
+
     <div id="footer">
       <p class="mb-2">
         Made with ❤️ & sarcasm by 
-        <a href="https://github.com/abhi-jthb" target="_blank">Abhijith B</a>
+        <a href="https://github.com/abhi-jithb" target="_blank">Abhijith B</a>
       </p>
-      <a
+      <div class="star">
+      <a id="star"
         href="https://github.com/abhi-jithb/malayalam-motivator"
         target="_blank"
-        class="inline-block bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-black transition"
+        class="inline-block bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-black transition glow  "
       >
         ⭐ Star this project on GitHub
       </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="language-modal" class="modal">
+    <div class="modal-content">
+      <img src="./assets/meme.jpeg" alt="Meme Face" />
+      <p class="text-lg text-gray-800 mb-4 font-semibold">"ഇപ്പൊ പറയ് മച്ചാനേ, ഏത് ലെവലിൽ roast വേണം?"</p>
+      <div>
+        <button class="lang-button" onclick="selectLanguage('malayalam')">മലയാളം</button>
+        <button class="lang-button" onclick="selectLanguage('english')">English</button>
+        <button class="lang-button" onclick="selectLanguage('manglish')">Manglish</button>
+      </div>
+      <p class="text-gray-400 text-sm mt-3">Choose your style wisely 😏</p>
     </div>
   </div>
 
   <script>
-
+    const modal = document.getElementById("language-modal");
     const userInput = document.getElementById("user-input");
-    const generateButton = document.getElementById("generate-button");
     const quoteDisplay = document.getElementById("quote-display");
     const errorMessage = document.getElementById("error-message");
+    const generateButton = document.getElementById("generate-button");
 
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    async function generateQuote() {
+    function openLanguageModal() {
       const userFeeling = userInput.value.trim();
-      const originalButtonText = generateButton.textContent;
-
       if (!userFeeling) {
         errorMessage.textContent = "Type something first, മച്ചാനേ 😏";
         errorMessage.classList.remove("hidden");
         return;
       }
+      // Input is present, show the modal
+      errorMessage.classList.add("hidden");
+      modal.style.display = "flex";
+    }
 
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    async function selectLanguage(language) {
+      closeModal();
+      await generateQuote(language);
+    }
+
+    async function generateQuote(language) {
+      const userFeeling = userInput.value.trim();
+      const originalButtonText = generateButton.textContent;
+      
+      // --- Added Loading State from Code 1 for better UX ---
       generateButton.disabled = true;
       generateButton.textContent = "Generating... (ഒരു നിമിഷം. ഇപ്പൊ ശരിയാക്കിത്തരാം 🪄)";
       quoteDisplay.innerHTML =
         '<svg class="animate-spin h-5 w-5 text-indigo-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
       quoteDisplay.classList.remove("text-gray-400", "italic");
-      errorMessage.classList.add("hidden");
-      errorMessage.textContent = "";
+      // --------------------------------------------------------
 
-      const systemPrompt =
-        "You are a sarcastic yet emotional Malayalam movie-style motivator. Speak in **pure Malayalam**. Start with strong, humorous sarcasm — like a film dialogue — then deliver a punch of real emotional motivation. The output must only be the final quote (no English, no explanation).";
-      const userQuery = `User says: "${userFeeling}"`;
+      const languagePrompts = {
+  malayalam:
+    "You are an old-school, philosophical Keralite uncle who is initially dismissive. Respond ONLY in pure Malayalam. First, deliver a slow, heavy-hitting sarcastic critique, then follow with a deep, meaningful life lesson. Your output must ONLY be the final motivation quote.",
+
+  english:
+    "You are a brutally honest and hilarious English-speaking motivator. Start with savage sarcasm, then switch to emotional motivation. Output ONLY the quote.",
+
+  manglish:
+    "You are a savage Malayali motivator who types in Manglish (Malayalam written in English). Mix sarcasm and emotion like a movie dialogue. Output ONLY the quote.",
+};
+
 
       const payload = {
-        contents: [{ parts: [{ text: userQuery }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ parts: [{ text: `User says: "${userFeeling}"` }] }],
+        systemInstruction: { parts: [{ text: languagePrompts[language] }] },
       };
 
       let resultText = "Failed to generate quote. Try again later.";
@@ -202,6 +281,7 @@
 
       generateButton.disabled = false;
       generateButton.textContent = originalButtonText;
+      quoteDisplay.style.animation = "fadeIn 0.6s ease";
 
       if (resultText.startsWith("Failed")) {
         quoteDisplay.innerHTML = `<span class="text-red-500">${resultText}</span>`;
@@ -209,6 +289,10 @@
         quoteDisplay.textContent = resultText;
       }
     }
+
+    window.onclick = function (event) {
+      if (event.target == modal) closeModal();
+    };
   </script>
 </body>
 </html>

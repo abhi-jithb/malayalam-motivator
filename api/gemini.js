@@ -19,6 +19,6 @@ export default async function handler(req, res) {
     res.status(200).json(data);
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ error: "SERVER ഒന്ന് തല കുനിച്ചതാ... കുറച്ച കഴിഞ്ഞു വാ എല്ലാം ശെരിയാകും 😌" });
+    res.status(500).json({ error: "yevido yentho... thakaraar ind" });
   }
 }

@@ -6,7 +6,7 @@
 
 ## ✨ Live Demo
 
-🚀 **[Try it here 😁](https://malayalam-motivator.vercel.app)**
+🚀 **[Try it here → (your deployment link)](https://malayalam-motivator.com)**
 
 ## Features 🚀
 
